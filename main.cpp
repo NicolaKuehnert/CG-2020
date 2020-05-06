@@ -37,12 +37,18 @@ Object triangle;
 Object quad;
 Object quad2;
 
+/*
+* Liste alle Dreiecke, die gerendert werden
+*/
 void renderTriangle()
 {
     triangle.render(GL_TRIANGLES, 3, view, projection, program);
    
 }
 
+/*
+* Liste alle Quadrate, die gerendert werden
+*/
 void renderQuad()
 {
     quad.render(GL_TRIANGLES, 6, view, projection, program);
@@ -50,6 +56,9 @@ void renderQuad()
     
 }
 
+/*
+* Initialisiert alle Dreiecke
+*/
 void initTriangle()
 {
     // Kanten, Farben, Indizes zuweisen
@@ -64,6 +73,9 @@ void initTriangle()
     
 }
 
+/*
+* Initialisiert alle Quadrate
+*/
 void initQuad()
 {
     // Kanten, Farben, Indizes zuweisen
