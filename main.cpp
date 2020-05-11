@@ -38,6 +38,141 @@ Object quad;
 Object quad2;
 
 /*
+* Calculate CMY from RGB
+* returns Pointer to array of float[3] with CMY values
+*/
+float* calcRGBtoCMY(float r, float g, float b) {
+    float c, m, y;
+    c = 1 - r; // Cyan = 1 - red
+    m = 1 - g; // Magenta = 1 - green
+    y = 1 - b; // Yellow = 1- blue
+
+    static float arr[] = { c, m, y };
+    std::cout << "C: " << c << "; M: " << m << "; Y: " << y << std::endl;
+    return arr;
+}
+
+/*
+* Calculate RGB from CMY
+* returns Pointer to array of float[3] with RGB values
+*/
+float* calcCMYtoRGB(float c, float m, float y) {
+    float r, g, b;
+    r = c + 1;
+    g = m + 1;
+    b = y + 1;
+
+    float arr[] = { r,g,b };
+    std::cout << "R: " << r << "; G: " << g << "; B: " << b << std::endl;
+    return arr;
+}
+
+/*
+* Calculate HSV from RGB
+* returns Pointer to array of float[3] with RGB values
+*/
+float* calcRGBtoHSV(float r, float g, float b) {
+    float h, s, v;
+    float max = 0, min = 1;
+    if (max < r) max = r;
+    if (max < g) max = g;
+    if (max < b) max = b;
+
+    if (min > r) min = r;
+    if (min > g) min = g;
+    if (min > b) min = b;
+
+    //höchster Wert bestimmt Helligkeit
+    v = max;
+
+    //Wenn max == min und r==g==b
+    if (max == min && r == b && r == g) h = 0;
+    // max == r => h = 60 * (0 + ((g-b)/(max-min)))
+    else if (max == r) {
+        h = 60 * ((g - b) / (max - min));
+    }
+    // max == g => h = 60 * (2 + ((b-r)/(max-min)))
+    else if (max == g) {
+        h = 60 * (2 + ((b - r) / (max - min)));
+    }
+    // max == b => h = 60 * (4 + ((r-g)/(max-min)))
+    else if (max == b) {
+        h = 60 * (4 + ((r - g) / (max - min)));
+    }
+
+    if (h < 0) {
+        h += 360;
+    }
+
+    //max == 0 => r==g==b==0 also kein Farbton
+    if (max == 0) s = 0;
+    else {
+        s = (max - min) / max;
+    }
+
+    float arr[] = { h,s,v };
+
+    std::cout << "H: " << h << "; S: " << s << "; V: " << v << std::endl;
+
+    return arr;
+}
+
+/*
+* Calculate RGB from HSV
+* returns Pointer to array of float[3] with RGB values
+*/
+float* calcHSVtoRGB(float h, float s, float v) {
+    int hi = h / 60;
+    float f = (h / 60) - hi;
+
+    float p = v * (1 - s);
+    float q = v * (1 - s * f);
+    float t = v * (1 - s * (1 - f));
+
+    float r, g, b;
+
+    switch (hi)
+    {
+    case 1:
+        r = q;
+        g = v;
+        b = p;
+        break;
+    case 2:
+        r = p;
+        g = v;
+        b = t;
+        break;
+    case 3:
+        r = p;
+        g = q;
+        b = v;
+        break;
+    case 4:
+        r = t;
+        g = p;
+        b = v;
+        break;
+    case 5:
+        r = v;
+        g = p;
+        b = q;
+        break;
+        // 0 oder 6
+    default:
+        r = v;
+        g = t;
+        b = p;
+        break;
+    }
+
+    float arr[] = { r,g,b };
+    std::cout << "R: " << r << "; G: " << g << "; B: " << b << std::endl;
+    return arr;
+}
+
+
+/*
 * Liste alle Dreiecke, die gerendert werden
 */
 void renderTriangle()
@@ -195,6 +330,35 @@ void glutKeyboard (unsigned char keycode, int x, int y)
 
 int main(int argc, char** argv)
 {
+
+    float r, g, b;
+    
+    float h, s, v;
+
+    std::cout << "Ein Wert fuer Rot eingeben" << std::endl;;
+    std::cin >> r;
+    std::cout << "Ein Wert fuer Gruen eingeben" << std::endl;
+    std::cin >> g;
+    std::cout << "Ein Wert fuer Blau eingeben" << std::endl;
+    std::cin >> b;
+
+    calcRGBtoCMY(r, g, b);
+    calcRGBtoHSV(r, g, b);
+
+    std::cout << "Ein Wert fuer Hue eingeben" << std::endl;
+    std::cin >> h;
+    std::cout << "Ein Wert fuer Saturation eingeben" << std::endl;
+    std::cin >> s;
+    std::cout << "Ein Wert fuer Value eingeben" << std::endl;
+    std::cin >> v;
+
+    float* p = calcHSVtoRGB(h, s, v);
+    r = *p;
+    g = *(p + 1);
+    b = *(p + 2);
+    calcRGBtoCMY(r, g, b);
+
+
   // GLUT: Initialize freeglut library (window toolkit).
   // Init Window
   glutInitWindowSize    (WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -251,6 +415,7 @@ int main(int argc, char** argv)
   // Cleanup in destructors:
   // Objects will be released in ~Object
   // Shader program will be released in ~GLSLProgram
-  
+
   return 0;
 }
+
