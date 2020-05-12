@@ -36,6 +36,7 @@ Struct to hold data for object rendering.
 Object triangle;
 Object quad;
 Object quad2;
+Object quad3;
 
 /*
 * Calculate CMY from RGB
@@ -58,9 +59,9 @@ float* calcRGBtoCMY(float r, float g, float b) {
 */
 float* calcCMYtoRGB(float c, float m, float y) {
     float r, g, b;
-    r = c + 1;
-    g = m + 1;
-    b = y + 1;
+    r = 1 - c;
+    g = 1 - m;
+    b = 1 - y;
 
     float arr[] = { r,g,b };
     std::cout << "R: " << r << "; G: " << g << "; B: " << b << std::endl;
@@ -188,6 +189,8 @@ void renderQuad()
 {
     quad.render(GL_TRIANGLES, 6, view, projection, program);
     quad2.render(GL_TRIANGLES, 6, view, projection, program);
+    quad3.render(GL_TRIANGLES, 6, view, projection, program);
+    
     
 }
 
@@ -211,28 +214,35 @@ void initTriangle()
 /*
 * Initialisiert alle Quadrate
 */
-void initQuad()
+void initQuad(float colors[3][3])
 {
     // Kanten, Farben, Indizes zuweisen
-    quad.vertices = { { -1.0f, 1.0f, 0.0f }, { -1.0, -1.0, 0.0 }, { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 0.0f } };
-    quad.colors = { { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0, 1.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
+    quad.vertices = { { -0.5f, 0.5f, 0.0f }, { -0.5, -0.5, 0.0 }, { 0.5f, -0.5f, 0.0f }, { 0.5f, 0.5f, 0.0f } };
+    quad.colors = { { colors[0][0], colors[0][1], colors[0][2] }, { colors[0][0], colors[0][1], colors[0][2] }, { colors[0][0], colors[0][1], colors[0][2] }, { colors[0][0], colors[0][1], colors[0][2] }};
     quad.indices = { 0, 1, 2, 0, 2, 3 };
 
-    quad2.vertices = { { -1.0f, 1.0f, 0.0f }, { -1.0, -1.0, 0.0 }, { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 0.0f } };
-    quad2.colors = { { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0, 1.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
+    quad2.vertices = { { 0.0f, 1.0f, 0.0f }, { 0.0, 0.0, 0.0 }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f } };
+    quad2.colors = { { colors[1][0], colors[1][1], colors[1][2] }, { colors[1][0], colors[1][1], colors[1][2] }, { colors[1][0], colors[1][1], colors[1][2] }, { colors[1][0], colors[1][1], colors[1][2] } };
     quad2.indices = { 0, 1, 2, 0, 2, 3 };
+
+    quad3.vertices = { { -1.0f, 0.0f, 0.0f }, { -1.0, -1.0, 0.0 }, { 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
+    quad3.colors = { { colors[2][0], colors[2][1], colors[2][2] }, { colors[2][0], colors[2][1], colors[2][2] }, { colors[2][0], colors[2][1], colors[2][2] }, { colors[2][0], colors[2][1], colors[2][2] } };
+    quad3.indices = { 0, 1, 2, 0, 2, 3 };
 
     GLuint programId = program.getHandle();
 
     // Quadrate initialisieren
-    quad.init(programId, glm::vec3(1.25f, 1.0f, 0.0f));
+    //quad.init(programId, glm::vec3(1.25f, 1.0f, 0.0f));
+    quad.init(programId, glm::vec3(0.75f, -0.6f, 0.0f));
     quad2.init(programId, glm::vec3(1.25f, -1.10f, 0.0f));
+    quad3.init(programId, glm::vec3(1.25f, -1.10f, 0.0f));
+
 }
 
 /*
  Initialization. Should return true if everything is ok and false if something went wrong.
  */
-bool init()
+bool init(float colors[3][3])
 {
   // OpenGL: Set "background" color and enable depth testing.
   glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -263,8 +273,8 @@ bool init()
   }
 
   // Create all objects.
-  initTriangle();
-  initQuad();
+  //initTriangle();
+  initQuad(colors);
   
   return true;
 }
@@ -276,7 +286,7 @@ void render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	renderTriangle();
+	//renderTriangle();
 	renderQuad();
 }
 
@@ -330,7 +340,7 @@ void glutKeyboard (unsigned char keycode, int x, int y)
 
 int main(int argc, char** argv)
 {
-
+    
     float r, g, b;
     
     float h, s, v;
@@ -357,6 +367,52 @@ int main(int argc, char** argv)
     g = *(p + 1);
     b = *(p + 2);
     calcRGBtoCMY(r, g, b);
+    
+    float r2, g2, b2;
+    float c, m, y;
+    float h2, s2, v2;
+
+    std::cout << "Faerben eines Quadrats nach RGB-Modell" << std::endl;
+    std::cout << "Ein Wert fuer Rot eingeben" << std::endl;
+    std::cin >> r2;
+    std::cout << "Ein Wert fuer Gruen eingeben" << std::endl;
+    std::cin >> g2;
+    std::cout << "Ein Wert fuer Blau eingeben" << std::endl;
+    std::cin >> b2;
+
+    float r3, g3, b3;
+
+    std::cout << "Faerben eines Quadrats nach CMY-Modell" << std::endl;
+    std::cout << "Ein Wert fuer Cyan eingeben" << std::endl;
+    std::cin >> c;
+    std::cout << "Ein Wert fuer Magenta eingeben" << std::endl;
+    std::cin >> m;
+    std::cout << "Ein Wert fuer Yellow eingeben" << std::endl;
+    std::cin >> y;
+
+    p = calcCMYtoRGB(c, m, y);
+    r3 = *p;
+    g3 = *(p + 1);
+    b3 = *(p + 2);
+
+    float r4, g4, b4;
+
+    std::cout << "Faerben eines Quadrats nach HSV-Modell" << std::endl;
+    std::cout << "Ein Wert fuer Hue eingeben" << std::endl;
+    std::cin >> h2;
+    std::cout << "Ein Wert fuer Saturation eingeben" << std::endl;
+    std::cin >> s2;
+    std::cout << "Ein Wert fuer Value eingeben" << std::endl;
+    std::cin >> v2;
+
+    p = calcHSVtoRGB(h2, s2, v2);
+    r4 = *p;
+    g4 = *(p + 1);
+    b4 = *(p + 2);
+    
+    float arr[3][3] = {{r2,g2,b2}, {r3,g3,b3}, {r4,g4,b4}};
+
+    
 
 
   // GLUT: Initialize freeglut library (window toolkit).
@@ -403,7 +459,7 @@ int main(int argc, char** argv)
   glutKeyboardFunc(glutKeyboard);
   
   // init vertex-array-objects.
-  bool result = init();
+  bool result = init(arr);
   if (!result) {
     return -2;
   }
