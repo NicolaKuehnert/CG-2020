@@ -25,10 +25,12 @@ cg::GLSLProgram program;
 glm::mat4x4 view;
 glm::mat4x4 projection;
 
+float X_VIEW =0.0f, Y_VIEW=0.0f, Z_VIEW=4.0f;
+
 float zNear = 0.1f;
 float zFar  = 100.0f;
 int n = 0;
-float r = 2.0f;
+float r = 1.0f;
 int num = 0;
 
 /*
@@ -288,7 +290,15 @@ void initTriangle()
     Kugel.render(GL_TRIANGLES, 3, view, projection, program); 
 }
 */
+void initView() {
+    // Construct view matrix.
+  // Camera
+    glm::vec3 eye(X_VIEW, Y_VIEW, Z_VIEW);
+    glm::vec3 center(0.0f, 0.0f, 0.0f);
+    glm::vec3 up(0.0f, 1.0f, 0.0f);
 
+    view = glm::lookAt(eye, center, up);
+}
 /*
  Initialization. Should return true if everything is ok and false if something went wrong.
  */
@@ -298,13 +308,7 @@ bool init()
   glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
   glEnable(GL_DEPTH_TEST);
   
-  // Construct view matrix.
-  // Camera
-  glm::vec3 eye(0.0f, 0.0f, 4.0f);
-  glm::vec3 center(0.0f, 0.0f, 0.0f);
-  glm::vec3 up(0.0f, 1.0f, 0.0f);
-  
-  view = glm::lookAt(eye, center, up);
+  initView();
   
   // Create a shader program and set light direction.
   if (!program.compileShaderFromFile("shader/simple.vert", cg::GLSLShader::VERTEX)) {
@@ -368,7 +372,7 @@ void glutKeyboard (unsigned char keycode, int x, int y)
         glutDestroyWindow(glutID);
         return;
     case 'R':
-        if (r < 3) {
+        if (r < (Z_VIEW/2)) {
             r++;
             initTriangle();
         }
@@ -390,6 +394,14 @@ void glutKeyboard (unsigned char keycode, int x, int y)
             n--;
             initTriangle();
         }
+        break;
+    case 'a':
+        Z_VIEW--;
+        initView();
+        break;
+    case 's':
+        Z_VIEW++;
+        initView();
         break;
     case 'x':
         // do something
