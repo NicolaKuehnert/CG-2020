@@ -27,16 +27,14 @@ glm::mat4x4 projection;
 
 float zNear = 0.1f;
 float zFar  = 100.0f;
+int n = 0;
+float r = 2.0f;
+int num = 0;
 
 /*
 Struct to hold data for object rendering.
 */
-
-
-Object triangle;
-Object quad;
-Object quad2;
-Object quad3;
+Object Kugel;
 
 /*
 * Calculate CMY from RGB
@@ -172,77 +170,129 @@ float* calcHSVtoRGB(float h, float s, float v) {
     return arr;
 }
 
+void drawTriangle(float v1x, float v1y, float v1z,
+    float v2x, float v2y, float v2z,
+    float v3x, float v3y, float v3z) {
 
-/*
-* Liste alle Dreiecke, die gerendert werden
-*/
-void renderTriangle()
-{
+    Object triangle;
+    triangle.vertices = { {v1x,v1y,v1z},{v2x,v2y,v2z},{v3x,v3y,v3z} };
+    triangle.colors = { {1.0f,1.0f,0.0f},{1.0f,1.0f,0.0f},{1.0f,1.0f,0.0f} };
+    triangle.indices = { 0,1,2 };
+    GLuint programId = program.getHandle();
+    
+
+    triangle.init(programId, glm::vec3{ 0.0f,0.0f,0.0f });
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     triangle.render(GL_TRIANGLES, 3, view, projection, program);
-   
+
 }
 
-/*
-* Liste alle Quadrate, die gerendert werden
-*/
-void renderQuad()
-{
-    quad.render(GL_TRIANGLES, 6, view, projection, program);
-    quad2.render(GL_TRIANGLES, 6, view, projection, program);
-    quad3.render(GL_TRIANGLES, 6, view, projection, program);
-    
-    
+void subdivide(float v1x, float v1y, float v1z,
+    float v2x, float v2y, float v2z,
+    float v3x, float v3y, float v3z,
+    int level) {
+    if (level == 0) {
+        // Reached desired tessellation level, emit triangle.
+        drawTriangle(v1x, v1y, v1z,
+            v2x, v2y, v2z,
+            v3x, v3y, v3z);
+    }
+    else {
+        // Calculate middle of first edge...
+        float v12x = (r / 2) * (v1x + v2x);
+        float v12y = (r / 2) * (v1y + v2y);
+        float v12z = (r / 2) * (v1z + v2z);
+        // ... and renormalize it to get a point on the sphere.
+        float s = r / sqrt(v12x * v12x + v12y * v12y + v12z * v12z);
+        v12x *= s;
+        v12y *= s;
+        v12z *= s;
+
+        // Same thing for the middle of the other two edges.
+        float v13x = (r / 2) * (v1x + v3x);
+        float v13y = (r / 2) * (v1y + v3y);
+        float v13z = (r / 2) * (v1z + v3z);
+        s = r / sqrt(v13x * v13x + v13y * v13y + v13z * v13z);
+        v13x *= s;
+        v13y *= s;
+        v13z *= s;
+
+        float v23x = (r / 2) * (v2x + v3x);
+        float v23y = (r / 2) * (v2y + v3y);
+        float v23z = (r / 2) * (v2z + v3z);
+        s = r / sqrt(v23x * v23x + v23y * v23y + v23z * v23z);
+        v23x *= s;
+        v23y *= s;
+        v23z *= s;
+
+        // Make the recursive calls.
+        subdivide(v1x, v1y, v1z,
+            v12x, v12y, v12z,
+            v13x, v13y, v13z,
+            level - 1);
+        subdivide(v12x, v12y, v12z,
+            v2x, v2y, v2z,
+            v23x, v23y, v23z,
+            level - 1);
+        subdivide(v13x, v13y, v13z,
+            v23x, v23y, v23z,
+            v3x, v3y, v3z,
+            level - 1);
+        subdivide(v12x, v12y, v12z,
+            v23x, v23y, v23z,
+            v13x, v13y, v13z,
+            level - 1);
+    }
 }
+
+
 
 /*
 * Initialisiert alle Dreiecke
 */
 void initTriangle()
-{
+{/*
     // Kanten, Farben, Indizes zuweisen
-    triangle.vertices = { glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f) };
-    triangle.colors = { glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f) };
-    triangle.indices = { 0, 1, 2 };
+    Kugel.vertices = {
+        { r, 0.0f, 0.0f }, //0 
+        { 0.0f, r, 0.0f }, //1
+        { 0.0f, 0.0f, r }, //2
 
-    GLuint programId = program.getHandle();
+        { -r, 0.0f, 0.0f }, //3
+        { 0.0f, -r, 0.0f }, //4
+        { 0.0f, 0.0f, -r }  //5
+    };*/
 
-    // Dreiecke initialisieren
-    triangle.init(programId, glm::vec3(-1.25f, 0.0f, 0.0f));
+    //              0               1               2
+    subdivide(r, 0.0f, 0.0f, 0.0f,  r, 0.0f, 0.0f, 0.0f, r, n);
+    //              0               4               2
+    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, r, n);
+    //              1               2               3
+    subdivide(0.0f, r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
+    //              4               2               3
+    subdivide(0.0f, -r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
+    //              0               1               5
+    subdivide(r, 0.0f, 0.0f, 0.0f, r, 0.0f, 0.0f, 0.0f, -r, n);
+    //              0               4               5
+    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, -r, n);
+    //              1               3               5
+    subdivide(r, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
+    //              4               3               5
+    subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
     
 }
 
-/*
-* Initialisiert alle Quadrate
-*/
-void initQuad(float colors[3][3])
-{
-    // Kanten, Farben, Indizes zuweisen
-    quad.vertices = { { -0.5f, 0.5f, 0.0f }, { -0.5, -0.5, 0.0 }, { 0.5f, -0.5f, 0.0f }, { 0.5f, 0.5f, 0.0f } };
-    quad.colors = { { colors[0][0], colors[0][1], colors[0][2] }, { colors[0][0], colors[0][1], colors[0][2] }, { colors[0][0], colors[0][1], colors[0][2] }, { colors[0][0], colors[0][1], colors[0][2] }};
-    quad.indices = { 0, 1, 2, 0, 2, 3 };
-
-    quad2.vertices = { { 0.0f, 1.0f, 0.0f }, { 0.0, 0.0, 0.0 }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f } };
-    quad2.colors = { { colors[1][0], colors[1][1], colors[1][2] }, { colors[1][0], colors[1][1], colors[1][2] }, { colors[1][0], colors[1][1], colors[1][2] }, { colors[1][0], colors[1][1], colors[1][2] } };
-    quad2.indices = { 0, 1, 2, 0, 2, 3 };
-
-    quad3.vertices = { { -1.0f, 0.0f, 0.0f }, { -1.0, -1.0, 0.0 }, { 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
-    quad3.colors = { { colors[2][0], colors[2][1], colors[2][2] }, { colors[2][0], colors[2][1], colors[2][2] }, { colors[2][0], colors[2][1], colors[2][2] }, { colors[2][0], colors[2][1], colors[2][2] } };
-    quad3.indices = { 0, 1, 2, 0, 2, 3 };
-
-    GLuint programId = program.getHandle();
-
-    // Quadrate initialisieren
-    //quad.init(programId, glm::vec3(1.25f, 1.0f, 0.0f));
-    quad.init(programId, glm::vec3(0.75f, -0.6f, 0.0f));
-    quad2.init(programId, glm::vec3(1.25f, -1.10f, 0.0f));
-    quad3.init(programId, glm::vec3(1.25f, -1.10f, 0.0f));
-
+/*void renderTriangle(Object triangle) {
+    
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    Kugel.render(GL_TRIANGLES, 3, view, projection, program); 
 }
+*/
 
 /*
  Initialization. Should return true if everything is ok and false if something went wrong.
  */
-bool init(float colors[3][3])
+bool init()
 {
   // OpenGL: Set "background" color and enable depth testing.
   glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -272,9 +322,8 @@ bool init(float colors[3][3])
     return false;
   }
 
-  // Create all objects.
-  //initTriangle();
-  initQuad(colors);
+  //Init Objects here
+  initTriangle();
   
   return true;
 }
@@ -286,8 +335,8 @@ void render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//renderTriangle();
-	renderQuad();
+	initTriangle();
+	//renderQuad();
 }
 
 void glutDisplay ()
@@ -314,106 +363,49 @@ void glutResize (int width, int height)
  */
 void glutKeyboard (unsigned char keycode, int x, int y)
 {
-  switch (keycode) {
-  case 27: // ESC
-    glutDestroyWindow ( glutID );
-    return;
-    
-  case '+':
-    // do something
-    break;
-  case '-':
-    // do something
-    break;
-  case 'x':
-    // do something
-    break;
-  case 'y':
-    // do something
-    break;
-  case 'z':
-    // do something
-    break;
-  }
+    switch (keycode) {
+    case 27: // ESC
+        glutDestroyWindow(glutID);
+        return;
+    case 'R':
+        if (r < 3) {
+            r++;
+            initTriangle();
+        }
+        break;
+    case 'r':
+        if (r > 1) {
+            r--;
+            initTriangle();
+        }
+        break;
+    case '+':
+        if (n < 4) {
+            n++;
+            initTriangle();
+        }
+        break;
+    case '-':
+        if (n > 0) {
+            n--;
+            initTriangle();
+        }
+        break;
+    case 'x':
+        // do something
+        break;
+    case 'y':
+        // do something
+        break;
+    case 'z':
+        // do something
+        break;
+    }
   glutPostRedisplay();
 }
 
 int main(int argc, char** argv)
 {
-    
-    float r, g, b;
-    
-    float h, s, v;
-
-    std::cout << "Ein Wert fuer Rot eingeben" << std::endl;;
-    std::cin >> r;
-    std::cout << "Ein Wert fuer Gruen eingeben" << std::endl;
-    std::cin >> g;
-    std::cout << "Ein Wert fuer Blau eingeben" << std::endl;
-    std::cin >> b;
-
-    calcRGBtoCMY(r, g, b);
-    calcRGBtoHSV(r, g, b);
-
-    std::cout << "Ein Wert fuer Hue eingeben" << std::endl;
-    std::cin >> h;
-    std::cout << "Ein Wert fuer Saturation eingeben" << std::endl;
-    std::cin >> s;
-    std::cout << "Ein Wert fuer Value eingeben" << std::endl;
-    std::cin >> v;
-
-    float* p = calcHSVtoRGB(h, s, v);
-    r = *p;
-    g = *(p + 1);
-    b = *(p + 2);
-    calcRGBtoCMY(r, g, b);
-    
-    float r2, g2, b2;
-    float c, m, y;
-    float h2, s2, v2;
-
-    std::cout << "Faerben eines Quadrats nach RGB-Modell" << std::endl;
-    std::cout << "Ein Wert fuer Rot eingeben" << std::endl;
-    std::cin >> r2;
-    std::cout << "Ein Wert fuer Gruen eingeben" << std::endl;
-    std::cin >> g2;
-    std::cout << "Ein Wert fuer Blau eingeben" << std::endl;
-    std::cin >> b2;
-
-    float r3, g3, b3;
-
-    std::cout << "Faerben eines Quadrats nach CMY-Modell" << std::endl;
-    std::cout << "Ein Wert fuer Cyan eingeben" << std::endl;
-    std::cin >> c;
-    std::cout << "Ein Wert fuer Magenta eingeben" << std::endl;
-    std::cin >> m;
-    std::cout << "Ein Wert fuer Yellow eingeben" << std::endl;
-    std::cin >> y;
-
-    p = calcCMYtoRGB(c, m, y);
-    r3 = *p;
-    g3 = *(p + 1);
-    b3 = *(p + 2);
-
-    float r4, g4, b4;
-
-    std::cout << "Faerben eines Quadrats nach HSV-Modell" << std::endl;
-    std::cout << "Ein Wert fuer Hue eingeben" << std::endl;
-    std::cin >> h2;
-    std::cout << "Ein Wert fuer Saturation eingeben" << std::endl;
-    std::cin >> s2;
-    std::cout << "Ein Wert fuer Value eingeben" << std::endl;
-    std::cin >> v2;
-
-    p = calcHSVtoRGB(h2, s2, v2);
-    r4 = *p;
-    g4 = *(p + 1);
-    b4 = *(p + 2);
-    
-    float arr[3][3] = {{r2,g2,b2}, {r3,g3,b3}, {r4,g4,b4}};
-
-    
-
 
   // GLUT: Initialize freeglut library (window toolkit).
   // Init Window
@@ -458,11 +450,7 @@ int main(int argc, char** argv)
   
   glutKeyboardFunc(glutKeyboard);
   
-  // init vertex-array-objects.
-  bool result = init(arr);
-  if (!result) {
-    return -2;
-  }
+  init();
 
   // GLUT: Loop until the user closes the window
   // rendering & event handling
