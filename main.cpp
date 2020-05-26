@@ -25,10 +25,15 @@ cg::GLSLProgram program;
 glm::mat4x4 view;
 glm::mat4x4 projection;
 
-float rotationstep = 30; //Size of a rotation-step in degrees, should be divisor of 360
+//Size of a rotation-step in degrees, should be divisor of 360
+float rotationstep = 30; 
+
 float rotationx = 0.f;
 float rotationy = 0.f;
 float rotationz = 0.f;
+
+//Relationship of the length of the axes drawn inside the sphere -- 1 means drawn axes match radius of the sphere
+float faxislength = 1.5f;
 
 float X_VIEW =0.0f, Y_VIEW=0.0f, Z_VIEW=4.0f;
 
@@ -289,6 +294,33 @@ void initTriangle()
     
 }
 
+void initAxes() {
+    Object xaxis, yaxis, zaxis;
+    GLuint programId = program.getHandle();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    //X-Achse
+    xaxis.vertices = { {faxislength*r, 0.0f, 0.0f}, {faxislength*-r, 0.0f, 0.0f} };
+    xaxis.colors = { {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f} };
+    xaxis.indices = { 0,1 };
+    xaxis.init(programId, glm::vec3{ 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f);
+    xaxis.render(GL_LINES, 2, view, projection, program);
+
+    //Y-Achse
+    yaxis.vertices = { {0.0f, faxislength*r, 0.0f}, {0.0f, faxislength*-r, 0.0f} };
+    yaxis.colors = { {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f} };
+    yaxis.indices = { 0,1 };
+    yaxis.init(programId, glm::vec3{ 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f);
+    yaxis.render(GL_LINES, 2, view, projection, program);
+
+    //Z-Achse
+    zaxis.vertices = { {0.0f, 0.0f, faxislength*r}, {0.0f, 0.0f, faxislength*-r} };
+    zaxis.colors = { {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f} };
+    zaxis.indices = { 0,1 };
+    zaxis.init(programId, glm::vec3{ 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f);
+    zaxis.render(GL_LINES, 2, view, projection, program);
+}
+
 /*void renderTriangle(Object triangle) {
     
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -333,6 +365,7 @@ bool init()
 
   //Init Objects here
   initTriangle();
+  initAxes();
   
   return true;
 }
@@ -344,6 +377,7 @@ void render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	initTriangle();
+    initAxes();
 	//renderQuad();
 }
 
