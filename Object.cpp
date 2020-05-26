@@ -15,7 +15,7 @@ void Object::render(GLenum mode, GLsizei f_vertices, glm::mat4x4 view, glm::mat4
     glBindVertexArray(0);
 }
 
-void Object::init(GLuint programId, glm::vec3 translation)
+void Object::init(GLuint programId, glm::vec3 translation, float rotationx, float rotationy, float rotationz)
 {
 
     GLuint pos;
@@ -53,4 +53,7 @@ void Object::init(GLuint programId, glm::vec3 translation)
 
     // Modify model matrix.
     model = glm::translate(glm::mat4(1.0f), translation);
+    model = glm::rotate(model, glm::radians(rotationx), glm::vec3(1, 0, 0));
+    model = glm::rotate(model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+    model = glm::rotate(model, glm::radians(rotationz), glm::vec3(0, 0, 1));
 }

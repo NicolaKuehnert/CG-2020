@@ -25,6 +25,11 @@ cg::GLSLProgram program;
 glm::mat4x4 view;
 glm::mat4x4 projection;
 
+float rotationstep = 30; //Size of a rotation-step in degrees, should be divisor of 360
+float rotationx = 0.f;
+float rotationy = 0.f;
+float rotationz = 0.f;
+
 float X_VIEW =0.0f, Y_VIEW=0.0f, Z_VIEW=4.0f;
 
 float zNear = 0.1f;
@@ -183,7 +188,7 @@ void drawTriangle(float v1x, float v1y, float v1z,
     GLuint programId = program.getHandle();
     
 
-    triangle.init(programId, glm::vec3{ 0.0f,0.0f,0.0f });
+    triangle.init(programId, glm::vec3{ 0.0f,0.0f,0.0f }, rotationx, rotationy, rotationz);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     triangle.render(GL_TRIANGLES, 3, view, projection, program);
 
@@ -338,7 +343,6 @@ bool init()
 void render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	initTriangle();
 	//renderQuad();
 }
@@ -404,13 +408,22 @@ void glutKeyboard (unsigned char keycode, int x, int y)
         initView();
         break;
     case 'x':
-        // do something
+        rotationx +=  rotationstep;
+        if (rotationx == 360) {
+            rotationx = 0;
+        }
         break;
     case 'y':
-        // do something
+        rotationy += rotationstep;
+        if (rotationy == 360) {
+            rotationy = 0;
+        }
         break;
     case 'z':
-        // do something
+        rotationz += rotationstep;
+        if (rotationz == 360) {
+            rotationz = 0;
+        }
         break;
     }
   glutPostRedisplay();
