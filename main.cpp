@@ -200,9 +200,9 @@ void drawTriangle(float v1x, float v1y, float v1z,
 }
 
 void subdivide(float v1x, float v1y, float v1z,
-    float v2x, float v2y, float v2z,
-    float v3x, float v3y, float v3z,
-    int level) {
+                float v2x, float v2y, float v2z,
+                float v3x, float v3y, float v3z,
+                int level) {
     if (level == 0) {
         // Reached desired tessellation level, emit triangle.
         drawTriangle(v1x, v1y, v1z,
