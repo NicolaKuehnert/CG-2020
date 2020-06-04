@@ -35,152 +35,26 @@ float rotationz = 0.f;
 //Relationship of the length of the axes drawn inside the sphere -- 1 means drawn axes match radius of the sphere
 float faxislength = 1.5f;
 
-float X_VIEW =0.0f, Y_VIEW=0.0f, Z_VIEW=4.0f;
+float X_VIEW =0.0f, Y_VIEW=0.0f, Z_VIEW=50.0f;
 
 float zNear = 0.1f;
 float zFar  = 100.0f;
-int n = 0;
-float r = 1.0f;
+int n = 2;
+float r = 3.0f;
 int num = 0;
+
+glm::vec3 red = { 1.0f,0.0f,0.0f };
+glm::vec3 green = { 0.0f,1.0f,0.0f };
+glm::vec3 blue = { 0.0f,0.0f,1.0f };
+glm::vec3 yellow = { 1.0f,1.0f,0.0f };
 
 /*
 Struct to hold data for object rendering.
 */
 Object Kugel;
-
-/*
-* Calculate CMY from RGB
-* returns Pointer to array of float[3] with CMY values
-*/
-float* calcRGBtoCMY(float r, float g, float b) {
-    float c, m, y;
-    c = 1 - r; // Cyan = 1 - red
-    m = 1 - g; // Magenta = 1 - green
-    y = 1 - b; // Yellow = 1- blue
-
-    static float arr[] = { c, m, y };
-    std::cout << "C: " << c << "; M: " << m << "; Y: " << y << std::endl;
-    return arr;
-}
-
-/*
-* Calculate RGB from CMY
-* returns Pointer to array of float[3] with RGB values
-*/
-float* calcCMYtoRGB(float c, float m, float y) {
-    float r, g, b;
-    r = 1 - c;
-    g = 1 - m;
-    b = 1 - y;
-
-    float arr[] = { r,g,b };
-    std::cout << "R: " << r << "; G: " << g << "; B: " << b << std::endl;
-    return arr;
-}
-
-/*
-* Calculate HSV from RGB
-* returns Pointer to array of float[3] with RGB values
-*/
-float* calcRGBtoHSV(float r, float g, float b) {
-    float h, s, v;
-    float max = 0, min = 1;
-    if (max < r) max = r;
-    if (max < g) max = g;
-    if (max < b) max = b;
-
-    if (min > r) min = r;
-    if (min > g) min = g;
-    if (min > b) min = b;
-
-    //höchster Wert bestimmt Helligkeit
-    v = max;
-
-    //Wenn max == min und r==g==b
-    if (max == min && r == b && r == g) h = 0;
-    // max == r => h = 60 * (0 + ((g-b)/(max-min)))
-    else if (max == r) {
-        h = 60 * ((g - b) / (max - min));
-    }
-    // max == g => h = 60 * (2 + ((b-r)/(max-min)))
-    else if (max == g) {
-        h = 60 * (2 + ((b - r) / (max - min)));
-    }
-    // max == b => h = 60 * (4 + ((r-g)/(max-min)))
-    else if (max == b) {
-        h = 60 * (4 + ((r - g) / (max - min)));
-    }
-
-    if (h < 0) {
-        h += 360;
-    }
-
-    //max == 0 => r==g==b==0 also kein Farbton
-    if (max == 0) s = 0;
-    else {
-        s = (max - min) / max;
-    }
-
-    float arr[] = { h,s,v };
-
-    std::cout << "H: " << h << "; S: " << s << "; V: " << v << std::endl;
-
-    return arr;
-}
-
-/*
-* Calculate RGB from HSV
-* returns Pointer to array of float[3] with RGB values
-*/
-float* calcHSVtoRGB(float h, float s, float v) {
-    int hi = h / 60;
-    float f = (h / 60) - hi;
-
-    float p = v * (1 - s);
-    float q = v * (1 - s * f);
-    float t = v * (1 - s * (1 - f));
-
-    float r, g, b;
-
-    switch (hi)
-    {
-    case 1:
-        r = q;
-        g = v;
-        b = p;
-        break;
-    case 2:
-        r = p;
-        g = v;
-        b = t;
-        break;
-    case 3:
-        r = p;
-        g = q;
-        b = v;
-        break;
-    case 4:
-        r = t;
-        g = p;
-        b = v;
-        break;
-    case 5:
-        r = v;
-        g = p;
-        b = q;
-        break;
-        // 0 oder 6
-    default:
-        r = v;
-        g = t;
-        b = p;
-        break;
-    }
-
-    float arr[] = { r,g,b };
-    std::cout << "R: " << r << "; G: " << g << "; B: " << b << std::endl;
-    return arr;
-}
+Object Planet;
+Object Mond1;
+Object Mond2;
 
 void drawTriangle(float v1x, float v1y, float v1z,
     float v2x, float v2y, float v2z,
@@ -193,7 +67,12 @@ void drawTriangle(float v1x, float v1y, float v1z,
     GLuint programId = program.getHandle();
     
 
-    triangle.init(programId, glm::vec3{ 0.0f,0.0f,0.0f }, rotationx, rotationy, rotationz);
+    triangle.init(programId, glm::vec3{ 0.0f,0.0f,0.0f });
+    
+    triangle.model = glm::rotate(triangle.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
+    triangle.model = glm::rotate(triangle.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+    triangle.model = glm::rotate(triangle.model, glm::radians(rotationz), glm::vec3(0, 0, 1));
+    
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     triangle.render(GL_TRIANGLES, 3, view, projection, program);
 
@@ -262,9 +141,8 @@ void subdivide(float v1x, float v1y, float v1z,
 /*
 * Initialisiert alle Dreiecke
 */
-void initTriangle()
-{/*
-    // Kanten, Farben, Indizes zuweisen
+void initSun()
+{
     Kugel.vertices = {
         { r, 0.0f, 0.0f }, //0 
         { 0.0f, r, 0.0f }, //1
@@ -273,10 +151,33 @@ void initTriangle()
         { -r, 0.0f, 0.0f }, //3
         { 0.0f, -r, 0.0f }, //4
         { 0.0f, 0.0f, -r }  //5
-    };*/
+    };
+    Kugel.colors = {
+        yellow, //0 
+        yellow, //1
+        yellow, //2
 
+        yellow, //3
+        yellow, //4
+        yellow  //5
+    };
+    Kugel.indices = {
+        0,1,2,
+        0,4,2,
+        1,2,3,
+        4,2,3,
+        0,1,5,
+        0,4,5,
+        1,3,5,
+        4,3,5
+    };
+    GLuint programId = program.getHandle();
+    Kugel.init(programId, { 0.0f,0.0f,0.0f });
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    Kugel.render(GL_TRIANGLES, 24, view, projection, program);
+    /*
     //              0               1               2
-    subdivide(r, 0.0f, 0.0f, 0.0f,  r, 0.0f, 0.0f, 0.0f, r, n);
+    subdivide(r,0.0f,0.0f,  0.0f,r,0.0f,  0.0f,0.0f,r,   n);
     //              0               4               2
     subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, r, n);
     //              1               2               3
@@ -291,7 +192,192 @@ void initTriangle()
     subdivide(0.0f, r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
     //              4               3               5
     subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
-    
+    */
+
+}
+
+void initPlanet()
+{
+    Planet.vertices = {
+        { 2.0f, 0.0f, 0.0f }, //0 
+        { 0.0f, 2.0f, 0.0f }, //1
+        { 0.0f, 0.0f, 2.0f }, //2
+
+        { -2.0f, 0.0f, 0.0f }, //3
+        { 0.0f, -2.0f, 0.0f }, //4
+        { 0.0f, 0.0f, -2.0f }  //5
+    };
+    Planet.colors = {
+        green, //0 
+        green, //1
+        green, //2
+
+        green, //3
+        green, //4
+        green  //5
+    };
+    Planet.indices = {
+        0,1,2,
+        0,4,2,
+        1,2,3,
+        4,2,3,
+        0,1,5,
+        0,4,5,
+        1,3,5,
+        4,3,5
+    };
+    GLuint programId = program.getHandle();
+    Planet.init(programId, { 15.0f,0.0f,0.0f });
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    Planet.model = glm::translate(Planet.model, { -15.0f,0.0f,0.0f });
+    Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+    Planet.model = glm::translate(Planet.model, { 15.0f,0.0f,0.0f });
+    Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+    Planet.render(GL_TRIANGLES, 24, view, projection, program);
+    /*
+    //              0               1               2
+    subdivide(r,0.0f,0.0f,  0.0f,r,0.0f,  0.0f,0.0f,r,   n);
+    //              0               4               2
+    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, r, n);
+    //              1               2               3
+    subdivide(0.0f, r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
+    //              4               2               3
+    subdivide(0.0f, -r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
+    //              0               1               5
+    subdivide(r, 0.0f, 0.0f, 0.0f, r, 0.0f, 0.0f, 0.0f, -r, n);
+    //              0               4               5
+    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, -r, n);
+    //              1               3               5
+    subdivide(0.0f, r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
+    //              4               3               5
+    subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
+    */
+
+}
+
+void initMond1()
+{
+    Mond1.vertices = {
+        { 1.0f, 0.0f, 0.0f }, //0 
+        { 0.0f, 1.0f, 0.0f }, //1
+        { 0.0f, 0.0f, 1.0f }, //2
+
+        { -1.0f, 0.0f, 0.0f }, //3
+        { 0.0f, -1.0f, 0.0f }, //4
+        { 0.0f, 0.0f, -1.0f }  //5
+    };
+    Mond1.colors = {
+        blue, //0 
+        blue, //1
+        blue, //2
+
+        blue, //3
+        blue, //4
+        blue  //5
+    };
+    Mond1.indices = {
+        0,1,2,
+        0,4,2,
+        1,2,3,
+        4,2,3,
+        0,1,5,
+        0,4,5,
+        1,3,5,
+        4,3,5
+    };
+    GLuint programId = program.getHandle();
+    Mond1.init(programId, { 15.0f,5.0f,0.0f });
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    Mond1.model = glm::translate(Mond1.model, { -15.0f,-5.0f,0.0f });
+    Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+    Mond1.model = glm::translate(Mond1.model, { 15.0f,5.0f,0.0f });
+
+    Mond1.model = glm::translate(Mond1.model, { -15.0f,-5.0f,0.0f });
+    Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
+    Mond1.model = glm::translate(Mond1.model, { 15.0f,5.0f,0.0f });
+    Mond1.render(GL_TRIANGLES, 24, view, projection, program);
+    /*
+    //              0               1               2
+    subdivide(r,0.0f,0.0f,  0.0f,r,0.0f,  0.0f,0.0f,r,   n);
+    //              0               4               2
+    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, r, n);
+    //              1               2               3
+    subdivide(0.0f, r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
+    //              4               2               3
+    subdivide(0.0f, -r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
+    //              0               1               5
+    subdivide(r, 0.0f, 0.0f, 0.0f, r, 0.0f, 0.0f, 0.0f, -r, n);
+    //              0               4               5
+    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, -r, n);
+    //              1               3               5
+    subdivide(0.0f, r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
+    //              4               3               5
+    subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
+    */
+
+}
+
+void initMond2()
+{
+    Mond2.vertices = {
+        { 1.0f, 0.0f, 0.0f }, //0 
+        { 0.0f, 1.0f, 0.0f }, //1
+        { 0.0f, 0.0f, 1.0f }, //2
+
+        { -1.0f, 0.0f, 0.0f }, //3
+        { 0.0f, -1.0f, 0.0f }, //4
+        { 0.0f, 0.0f, -1.0f }  //5
+    };
+    Mond2.colors = {
+        blue, //0 
+        blue, //1
+        blue, //2
+
+        blue, //3
+        blue, //4
+        blue  //5
+    };
+    Mond2.indices = {
+        0,1,2,
+        0,4,2,
+        1,2,3,
+        4,2,3,
+        0,1,5,
+        0,4,5,
+        1,3,5,
+        4,3,5
+    };
+    GLuint programId = program.getHandle();
+    Mond2.init(programId, { 15.0f,-5.0f,0.0f });
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
+    Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+    Mond2.model = glm::translate(Mond2.model, { 15.0f,-5.0f,0.0f });
+
+    Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
+    Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
+    Mond2.model = glm::translate(Mond2.model, { 15.0f,-5.0f,0.0f });
+    Mond2.render(GL_TRIANGLES, 24, view, projection, program);
+
+    /*
+    //              0               1               2
+    subdivide(r,0.0f,0.0f,  0.0f,r,0.0f,  0.0f,0.0f,r,   n);
+    //              0               4               2
+    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, r, n);
+    //              1               2               3
+    subdivide(0.0f, r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
+    //              4               2               3
+    subdivide(0.0f, -r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
+    //              0               1               5
+    subdivide(r, 0.0f, 0.0f, 0.0f, r, 0.0f, 0.0f, 0.0f, -r, n);
+    //              0               4               5
+    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, -r, n);
+    //              1               3               5
+    subdivide(0.0f, r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
+    //              4               3               5
+    subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
+    */
+
 }
 
 void initAxes() {
@@ -303,33 +389,27 @@ void initAxes() {
     xaxis.vertices = { {faxislength*r, 0.0f, 0.0f}, {faxislength*-r, 0.0f, 0.0f} };
     xaxis.colors = { {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f} };
     xaxis.indices = { 0,1 };
-    xaxis.init(programId, glm::vec3{ 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f);
-    xaxis.render(GL_LINES, 2, view, projection, program);
+    xaxis.init(programId, glm::vec3{ 0.0f, 0.0f, 0.0f });
+    //xaxis.render(GL_LINES, 2, view, projection, program);
 
     //Y-Achse
     yaxis.vertices = { {0.0f, faxislength*r, 0.0f}, {0.0f, faxislength*-r, 0.0f} };
-    yaxis.colors = { {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f} };
+    yaxis.colors = { red, red };
     yaxis.indices = { 0,1 };
-    yaxis.init(programId, glm::vec3{ 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f);
+    yaxis.init(programId, glm::vec3{ 0.0f, 0.0f, 0.0f });
     yaxis.render(GL_LINES, 2, view, projection, program);
 
     //Z-Achse
     zaxis.vertices = { {0.0f, 0.0f, faxislength*r}, {0.0f, 0.0f, faxislength*-r} };
     zaxis.colors = { {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f} };
     zaxis.indices = { 0,1 };
-    zaxis.init(programId, glm::vec3{ 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f);
-    zaxis.render(GL_LINES, 2, view, projection, program);
+    zaxis.init(programId, glm::vec3{ 0.0f, 0.0f, 0.0f });
+    //zaxis.render(GL_LINES, 2, view, projection, program);
 }
 
-/*void renderTriangle(Object triangle) {
-    
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    Kugel.render(GL_TRIANGLES, 3, view, projection, program); 
-}
-*/
 void initView() {
     // Construct view matrix.
-  // Camera
+    // Camera
     glm::vec3 eye(X_VIEW, Y_VIEW, Z_VIEW);
     glm::vec3 center(0.0f, 0.0f, 0.0f);
     glm::vec3 up(0.0f, 1.0f, 0.0f);
@@ -364,7 +444,10 @@ bool init()
   }
 
   //Init Objects here
-  initTriangle();
+  initSun();
+  initPlanet();
+  initMond1();
+  initMond2();
   initAxes();
   
   return true;
@@ -376,9 +459,24 @@ bool init()
 void render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	initTriangle();
+	initSun();
+    initPlanet();
+    initMond1();
+    initMond2();
     initAxes();
-	//renderQuad();
+    
+    rotationx += rotationstep;
+    if (rotationx == 360) {
+        rotationx = 0;
+    }
+    rotationy += rotationstep;
+    if (rotationy == 360) {
+        rotationy = 0;
+    }
+    rotationz += rotationstep;
+    if (rotationz == 360) {
+        rotationz = 0;
+    }
 }
 
 void glutDisplay ()
@@ -413,25 +511,25 @@ void glutKeyboard (unsigned char keycode, int x, int y)
     case 'R':
         if (r < (Z_VIEW/2)) {
             r++;
-            initTriangle();
+            initSun();
         }
         break;
     case 'r':
         if (r > 1) {
             r--;
-            initTriangle();
+            initSun();
         }
         break;
     case '+':
         if (n < 4) {
             n++;
-            initTriangle();
+            initSun();
         }
         break;
     case '-':
         if (n > 0) {
             n--;
-            initTriangle();
+            initSun();
         }
         break;
     case 'a':
@@ -506,7 +604,7 @@ int main(int argc, char** argv)
   // GLUT: Set callbacks for events.
   glutReshapeFunc(glutResize);
   glutDisplayFunc(glutDisplay);
-  //glutIdleFunc   (glutDisplay); // redisplay when idle
+  glutIdleFunc   (glutDisplay); // redisplay when idle
   
   glutKeyboardFunc(glutKeyboard);
   

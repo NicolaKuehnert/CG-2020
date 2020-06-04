@@ -45,6 +45,6 @@ public:
 
     void render(GLenum mode, GLsizei f_vertices, glm::mat4x4 view, glm::mat4x4 projection, cg::GLSLProgram program);
 
-    void init(GLuint programId, glm::vec3 translation, float rotationx, float rotationy, float rotationz);
+    void init(GLuint programId, glm::vec3 translation);
 };
 
