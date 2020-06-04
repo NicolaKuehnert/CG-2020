@@ -398,7 +398,7 @@ void glutResize (int width, int height)
   
   // Construct projection matrix.
   //projection = glm::perspective(45.0f, (float) width / height, zNear, zFar);
-  projection = glm::ortho(-5.0f * (float)width / height, 5.0f * (float)width / height, -5.0f, 5.0f, zNear, zFar);
+  projection = glm::perspective(45.0f, (float)width / height, zNear, zFar);
 }
 
 /*
