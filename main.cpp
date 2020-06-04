@@ -48,6 +48,9 @@ glm::vec3 green = { 0.0f,1.0f,0.0f };
 glm::vec3 blue = { 0.0f,0.0f,1.0f };
 glm::vec3 yellow = { 1.0f,1.0f,0.0f };
 
+glm::vec3 MS = { 0.0f,0.0f,0.0f };
+glm::vec3 MP = { 15.0f,0.0f,0.0f };
+
 /*
 Struct to hold data for object rendering.
 */
@@ -55,6 +58,7 @@ Object Kugel;
 Object Planet;
 Object Mond1;
 Object Mond2;
+Object xaxis, yaxis;
 
 void drawTriangle(float v1x, float v1y, float v1z,
     float v2x, float v2y, float v2z,
@@ -172,9 +176,8 @@ void initSun()
         4,3,5
     };
     GLuint programId = program.getHandle();
-    Kugel.init(programId, { 0.0f,0.0f,0.0f });
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    Kugel.render(GL_TRIANGLES, 24, view, projection, program);
+    Kugel.init(programId, MS);
+    
     /*
     //              0               1               2
     subdivide(r,0.0f,0.0f,  0.0f,r,0.0f,  0.0f,0.0f,r,   n);
@@ -194,6 +197,11 @@ void initSun()
     subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
     */
 
+}
+
+void renderSun() {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    Kugel.render(GL_TRIANGLES, 24, view, projection, program);
 }
 
 void initPlanet()
@@ -227,13 +235,8 @@ void initPlanet()
         4,3,5
     };
     GLuint programId = program.getHandle();
-    Planet.init(programId, { 15.0f,0.0f,0.0f });
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    Planet.model = glm::translate(Planet.model, { -15.0f,0.0f,0.0f });
-    Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
-    Planet.model = glm::translate(Planet.model, { 15.0f,0.0f,0.0f });
-    Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
-    Planet.render(GL_TRIANGLES, 24, view, projection, program);
+    Planet.init(programId, MP);
+    
     /*
     //              0               1               2
     subdivide(r,0.0f,0.0f,  0.0f,r,0.0f,  0.0f,0.0f,r,   n);
@@ -253,6 +256,15 @@ void initPlanet()
     subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
     */
 
+}
+
+void renderPlanet() {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    Planet.model = glm::translate(Planet.model, { -15.0f,0.0f,0.0f });
+    Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+    Planet.model = glm::translate(Planet.model, { 15.0f, 0.0f, 0.0f });
+    Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+    Planet.render(GL_TRIANGLES, 24, view, projection, program);
 }
 
 void initMond1()
@@ -287,15 +299,7 @@ void initMond1()
     };
     GLuint programId = program.getHandle();
     Mond1.init(programId, { 15.0f,5.0f,0.0f });
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    Mond1.model = glm::translate(Mond1.model, { -15.0f,-5.0f,0.0f });
-    Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
-    Mond1.model = glm::translate(Mond1.model, { 15.0f,5.0f,0.0f });
-
-    Mond1.model = glm::translate(Mond1.model, { -15.0f,-5.0f,0.0f });
-    Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
-    Mond1.model = glm::translate(Mond1.model, { 15.0f,5.0f,0.0f });
-    Mond1.render(GL_TRIANGLES, 24, view, projection, program);
+    
     /*
     //              0               1               2
     subdivide(r,0.0f,0.0f,  0.0f,r,0.0f,  0.0f,0.0f,r,   n);
@@ -315,6 +319,18 @@ void initMond1()
     subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
     */
 
+}
+
+void renderMond1() {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    Mond1.model = glm::translate(Mond1.model, { -15.0f,-5.0f,0.0f });
+    Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+    Mond1.model = glm::translate(Mond1.model, { 15.0f,5.0f,0.0f });
+
+    Mond1.model = glm::translate(Mond1.model, { -15.0f,-5.0f,0.0f });
+    Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
+    Mond1.model = glm::translate(Mond1.model, { 15.0f,5.0f,0.0f });
+    Mond1.render(GL_TRIANGLES, 24, view, projection, program);
 }
 
 void initMond2()
@@ -349,15 +365,7 @@ void initMond2()
     };
     GLuint programId = program.getHandle();
     Mond2.init(programId, { 15.0f,-5.0f,0.0f });
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
-    Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
-    Mond2.model = glm::translate(Mond2.model, { 15.0f,-5.0f,0.0f });
-
-    Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
-    Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
-    Mond2.model = glm::translate(Mond2.model, { 15.0f,-5.0f,0.0f });
-    Mond2.render(GL_TRIANGLES, 24, view, projection, program);
+    
 
     /*
     //              0               1               2
@@ -380,31 +388,47 @@ void initMond2()
 
 }
 
+void renderMond2(){
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
+    Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+    Mond2.model = glm::translate(Mond2.model, { 15.0f,-5.0f,0.0f });
+
+    Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
+    Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
+    Mond2.model = glm::translate(Mond2.model, { 15.0f,-5.0f,0.0f });
+    Mond2.render(GL_TRIANGLES, 24, view, projection, program);
+}
+
 void initAxes() {
-    Object xaxis, yaxis, zaxis;
+    
     GLuint programId = program.getHandle();
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    //X-Achse
-    xaxis.vertices = { {faxislength*r, 0.0f, 0.0f}, {faxislength*-r, 0.0f, 0.0f} };
-    xaxis.colors = { {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f} };
+    //Planet Axis
+    xaxis.vertices = { {0.0f,3.0f,0.0f}, {0.0f,-3.0f,0.0f} };
+    xaxis.colors = { red, red };
     xaxis.indices = { 0,1 };
-    xaxis.init(programId, glm::vec3{ 0.0f, 0.0f, 0.0f });
-    //xaxis.render(GL_LINES, 2, view, projection, program);
+    xaxis.init(programId, { 15.0f,0.0f,0.0f });
 
-    //Y-Achse
-    yaxis.vertices = { {0.0f, faxislength*r, 0.0f}, {0.0f, faxislength*-r, 0.0f} };
+    
+
+    //Sun Axis
+    yaxis.vertices = { {0.0f, r+1, 0.0f}, {0.0f, -(r+1), 0.0f} };
     yaxis.colors = { red, red };
     yaxis.indices = { 0,1 };
     yaxis.init(programId, glm::vec3{ 0.0f, 0.0f, 0.0f });
-    yaxis.render(GL_LINES, 2, view, projection, program);
+    
+    
+}
 
-    //Z-Achse
-    zaxis.vertices = { {0.0f, 0.0f, faxislength*r}, {0.0f, 0.0f, faxislength*-r} };
-    zaxis.colors = { {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f} };
-    zaxis.indices = { 0,1 };
-    zaxis.init(programId, glm::vec3{ 0.0f, 0.0f, 0.0f });
-    //zaxis.render(GL_LINES, 2, view, projection, program);
+void renderAxis() {
+    xaxis.model = glm::translate(xaxis.model, { -15.0f,0.0f,0.0f });
+    xaxis.model = glm::rotate(xaxis.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+    xaxis.model = glm::translate(xaxis.model, { 15.0f,0.0f,0.0f });
+
+    xaxis.render(GL_LINES, 2, view, projection, program);
+    yaxis.render(GL_LINES, 2, view, projection, program);
 }
 
 void initView() {
@@ -459,24 +483,11 @@ bool init()
 void render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	initSun();
-    initPlanet();
-    initMond1();
-    initMond2();
-    initAxes();
-    
-    rotationx += rotationstep;
-    if (rotationx == 360) {
-        rotationx = 0;
-    }
-    rotationy += rotationstep;
-    if (rotationy == 360) {
-        rotationy = 0;
-    }
-    rotationz += rotationstep;
-    if (rotationz == 360) {
-        rotationz = 0;
-    }
+	renderSun();
+    renderPlanet();
+    renderMond1();
+    renderMond2();
+    renderAxis();
 }
 
 void glutDisplay ()
@@ -508,30 +519,6 @@ void glutKeyboard (unsigned char keycode, int x, int y)
     case 27: // ESC
         glutDestroyWindow(glutID);
         return;
-    case 'R':
-        if (r < (Z_VIEW/2)) {
-            r++;
-            initSun();
-        }
-        break;
-    case 'r':
-        if (r > 1) {
-            r--;
-            initSun();
-        }
-        break;
-    case '+':
-        if (n < 4) {
-            n++;
-            initSun();
-        }
-        break;
-    case '-':
-        if (n > 0) {
-            n--;
-            initSun();
-        }
-        break;
     case 'a':
         Z_VIEW--;
         initView();
@@ -540,8 +527,16 @@ void glutKeyboard (unsigned char keycode, int x, int y)
         Z_VIEW++;
         initView();
         break;
+    case 'u':
+        Planet.model = glm::translate(Planet.model, { 0.0f,1.0f,0.0f });
+        Planet.render(GL_TRIANGLES, 24, view, projection, program);
+        break;
+    case 'i':
+        Planet.model = glm::translate(Planet.model, { 0.0f,-1.0f,0.0f });
+        Planet.render(GL_TRIANGLES, 24, view, projection, program);
+        break;
     case 'x':
-        rotationx +=  rotationstep;
+        rotationx += rotationstep;
         if (rotationx == 360) {
             rotationx = 0;
         }
@@ -550,12 +545,6 @@ void glutKeyboard (unsigned char keycode, int x, int y)
         rotationy += rotationstep;
         if (rotationy == 360) {
             rotationy = 0;
-        }
-        break;
-    case 'z':
-        rotationz += rotationstep;
-        if (rotationz == 360) {
-            rotationz = 0;
         }
         break;
     }
@@ -604,7 +593,7 @@ int main(int argc, char** argv)
   // GLUT: Set callbacks for events.
   glutReshapeFunc(glutResize);
   glutDisplayFunc(glutDisplay);
-  glutIdleFunc   (glutDisplay); // redisplay when idle
+  //glutIdleFunc   (glutDisplay); // redisplay when idle
   
   glutKeyboardFunc(glutKeyboard);
   
