@@ -32,16 +32,12 @@ float rotationx = 1.f;
 float rotationy = 1.f;
 float rotationz = 0.f;
 
-//Relationship of the length of the axes drawn inside the sphere -- 1 means drawn axes match radius of the sphere
-float faxislength = 1.5f;
-
 float X_VIEW =0.0f, Y_VIEW=0.0f, Z_VIEW=50.0f;
 
 float zNear = 0.1f;
 float zFar  = 100.0f;
 int n = 4;
 float r = 3.0f;
-int num = 0;
 bool g = false;
 
 glm::vec3 red = { 1.0f,0.0f,0.0f };
@@ -61,90 +57,9 @@ Object Mond1;
 Object Mond2;
 Object xaxis, yaxis;
 
-void drawTriangle(float v1x, float v1y, float v1z,
-    float v2x, float v2y, float v2z,
-    float v3x, float v3y, float v3z) {
-
-    Object triangle;
-    triangle.vertices = { {v1x,v1y,v1z},{v2x,v2y,v2z},{v3x,v3y,v3z} };
-    triangle.colors = { {0.0f,1.0f,0.0f},{0.0f,1.0f,0.0f},{0.0f,1.0f,0.0f} };
-    triangle.indices = { 0,1,2 };
-    GLuint programId = program.getHandle();
-    
-
-    triangle.init(programId, glm::vec3{ 0.0f,0.0f,0.0f });
-    
-    triangle.model = glm::rotate(triangle.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
-    triangle.model = glm::rotate(triangle.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
-    triangle.model = glm::rotate(triangle.model, glm::radians(rotationz), glm::vec3(0, 0, 1));
-    
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    triangle.render(GL_TRIANGLES, 3, view, projection, program);
-
-}
-
-void subdivide(float v1x, float v1y, float v1z,
-                float v2x, float v2y, float v2z,
-                float v3x, float v3y, float v3z,
-                int level) {
-    if (level == 0) {
-        // Reached desired tessellation level, emit triangle.
-        drawTriangle(v1x, v1y, v1z,
-            v2x, v2y, v2z,
-            v3x, v3y, v3z);
-    }
-    else {
-        // Calculate middle of first edge...
-        float v12x = (r / 2) * (v1x + v2x);
-        float v12y = (r / 2) * (v1y + v2y);
-        float v12z = (r / 2) * (v1z + v2z);
-        // ... and renormalize it to get a point on the sphere.
-        float s = r / sqrt(v12x * v12x + v12y * v12y + v12z * v12z);
-        v12x *= s;
-        v12y *= s;
-        v12z *= s;
-
-        // Same thing for the middle of the other two edges.
-        float v13x = (r / 2) * (v1x + v3x);
-        float v13y = (r / 2) * (v1y + v3y);
-        float v13z = (r / 2) * (v1z + v3z);
-        s = r / sqrt(v13x * v13x + v13y * v13y + v13z * v13z);
-        v13x *= s;
-        v13y *= s;
-        v13z *= s;
-
-        float v23x = (r / 2) * (v2x + v3x);
-        float v23y = (r / 2) * (v2y + v3y);
-        float v23z = (r / 2) * (v2z + v3z);
-        s = r / sqrt(v23x * v23x + v23y * v23y + v23z * v23z);
-        v23x *= s;
-        v23y *= s;
-        v23z *= s;
-
-        // Make the recursive calls.
-        subdivide(v1x, v1y, v1z,
-            v12x, v12y, v12z,
-            v13x, v13y, v13z,
-            level - 1);
-        subdivide(v12x, v12y, v12z,
-            v2x, v2y, v2z,
-            v23x, v23y, v23z,
-            level - 1);
-        subdivide(v13x, v13y, v13z,
-            v23x, v23y, v23z,
-            v3x, v3y, v3z,
-            level - 1);
-        subdivide(v12x, v12y, v12z,
-            v23x, v23y, v23z,
-            v13x, v13y, v13z,
-            level - 1);
-    }
-}
-
-
-
 /*
-* Initialisiert alle Dreiecke
+* Initialisiert alle Objekte
+* Ohne Render Funktion würden die Objekte jedes Mal neu initialisiert -> Speicherüberlauf!
 */
 void initSun()
 {
@@ -178,25 +93,6 @@ void initSun()
     };
     GLuint programId = program.getHandle();
     Kugel.init(programId, MS);
-    
-    /*
-    //              0               1               2
-    subdivide(r,0.0f,0.0f,  0.0f,r,0.0f,  0.0f,0.0f,r,   n);
-    //              0               4               2
-    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, r, n);
-    //              1               2               3
-    subdivide(0.0f, r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
-    //              4               2               3
-    subdivide(0.0f, -r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
-    //              0               1               5
-    subdivide(r, 0.0f, 0.0f, 0.0f, r, 0.0f, 0.0f, 0.0f, -r, n);
-    //              0               4               5
-    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, -r, n);
-    //              1               3               5
-    subdivide(0.0f, r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
-    //              4               3               5
-    subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
-    */
 
 }
 
@@ -238,24 +134,6 @@ void initPlanet()
     GLuint programId = program.getHandle();
     Planet.init(programId, MP);
     
-    /*
-    //              0               1               2
-    subdivide(r,0.0f,0.0f,  0.0f,r,0.0f,  0.0f,0.0f,r,   n);
-    //              0               4               2
-    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, r, n);
-    //              1               2               3
-    subdivide(0.0f, r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
-    //              4               2               3
-    subdivide(0.0f, -r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
-    //              0               1               5
-    subdivide(r, 0.0f, 0.0f, 0.0f, r, 0.0f, 0.0f, 0.0f, -r, n);
-    //              0               4               5
-    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, -r, n);
-    //              1               3               5
-    subdivide(0.0f, r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
-    //              4               3               5
-    subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
-    */
 
 }
 
@@ -297,24 +175,6 @@ void initMond1()
     GLuint programId = program.getHandle();
     Mond1.init(programId, { 15.0f,5.0f,0.0f });
     
-    /*
-    //              0               1               2
-    subdivide(r,0.0f,0.0f,  0.0f,r,0.0f,  0.0f,0.0f,r,   n);
-    //              0               4               2
-    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, r, n);
-    //              1               2               3
-    subdivide(0.0f, r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
-    //              4               2               3
-    subdivide(0.0f, -r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
-    //              0               1               5
-    subdivide(r, 0.0f, 0.0f, 0.0f, r, 0.0f, 0.0f, 0.0f, -r, n);
-    //              0               4               5
-    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, -r, n);
-    //              1               3               5
-    subdivide(0.0f, r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
-    //              4               3               5
-    subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
-    */
 
 }
 
@@ -357,25 +217,6 @@ void initMond2()
     GLuint programId = program.getHandle();
     Mond2.init(programId, { 15.0f,-5.0f,0.0f });
     
-
-    /*
-    //              0               1               2
-    subdivide(r,0.0f,0.0f,  0.0f,r,0.0f,  0.0f,0.0f,r,   n);
-    //              0               4               2
-    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, r, n);
-    //              1               2               3
-    subdivide(0.0f, r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
-    //              4               2               3
-    subdivide(0.0f, -r, 0.0f, 0.0f, 0.0f, r, -r, 0.0f, 0.0f, n);
-    //              0               1               5
-    subdivide(r, 0.0f, 0.0f, 0.0f, r, 0.0f, 0.0f, 0.0f, -r, n);
-    //              0               4               5
-    subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, -r, n);
-    //              1               3               5
-    subdivide(0.0f, r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
-    //              4               3               5
-    subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
-    */
 
 }
 
@@ -472,6 +313,8 @@ void render()
     renderAxis();
 
     //Ohne delay rendert das Programm viel zu schnell
+    //d und f sollen schneller/langsamer machen mit flüssiger Animation
+    //Erhöht man Rotationsweite -> Springen, also Animationsgeschwindigkeit (Rendergeschwindigkeit) verändern
     switch (n)
     {
     case 1:
@@ -488,6 +331,14 @@ void render()
         break;
     }
 
+    /*
+    Aufgabe 4
+    Tastengruck g soll Rotation stoppen, außer Monde um Planeten
+
+    TO-DO:
+    Die beiden Rotationen passen noch nicht im Zusammenspiel.
+    Funktionieren einzeln, aber nicht gemeinsam
+    */
     if (g) {
         Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
         Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
@@ -505,7 +356,9 @@ void render()
         Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
         Planet.model = glm::translate(Planet.model, { 15.0f, 0.0f, 0.0f });
     }
-
+    /*
+    Monde rotieren um den Planeten
+    */
     Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
     Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
     Mond2.model = glm::translate(Mond2.model, { 15.0f,-5.0f,0.0f });
@@ -514,6 +367,9 @@ void render()
     Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
     Mond1.model = glm::translate(Mond1.model, { 15.0f,5.0f,0.0f });
 
+    /*
+    Planet rotiert um sich selbst
+    */
     Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
 }
 
@@ -555,6 +411,9 @@ void glutKeyboard (unsigned char keycode, int x, int y)
         initView();
         break;
     case 'u':
+        /*
+        Verschiebt Planet, Planetachse und Monde nach oben, entlang der Planetenachse
+        */
         Planet.model = glm::translate(Planet.model, { 0.0f,1.0f,0.0f });
         Planet.render(GL_TRIANGLES, 24, view, projection, program);
 
@@ -568,6 +427,9 @@ void glutKeyboard (unsigned char keycode, int x, int y)
         xaxis.render(GL_TRIANGLES, 24, view, projection, program);
         break;
     case 'i':
+        /*
+        Verschiebt Planet, Planetachse und Monde nach unten, entlang der Planetenachse
+        */
         Planet.model = glm::translate(Planet.model, { 0.0f,-1.0f,0.0f });
         Planet.render(GL_TRIANGLES, 24, view, projection, program);
 
@@ -581,14 +443,23 @@ void glutKeyboard (unsigned char keycode, int x, int y)
         xaxis.render(GL_TRIANGLES, 24, view, projection, program);
         break;
     case 'g':
+        /*
+        Stoppt und startet Rotation um die Sonne
+        */
         if (g) g = false;
         else g = true;
         break;
     case 'd':
+        /*
+        Senkt Animationsgeschwindigkeit
+        */
         if (n == 1) break;
         n--;
         break;
     case 'f':
+        /*
+        Erhöht Animationsgeschwindigkeit
+        */
         if (n == 4) break;
         n++;
         break;
