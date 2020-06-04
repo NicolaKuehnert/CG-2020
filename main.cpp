@@ -28,8 +28,8 @@ glm::mat4x4 projection;
 //Size of a rotation-step in degrees, should be divisor of 360
 float rotationstep = 1; 
 
-float rotationx = 0.f;
-float rotationy = 0.f;
+float rotationx = 1.f;
+float rotationy = 1.f;
 float rotationz = 0.f;
 
 //Relationship of the length of the axes drawn inside the sphere -- 1 means drawn axes match radius of the sphere
@@ -39,9 +39,10 @@ float X_VIEW =0.0f, Y_VIEW=0.0f, Z_VIEW=50.0f;
 
 float zNear = 0.1f;
 float zFar  = 100.0f;
-int n = 2;
+int n = 4;
 float r = 3.0f;
 int num = 0;
+bool g = false;
 
 glm::vec3 red = { 1.0f,0.0f,0.0f };
 glm::vec3 green = { 0.0f,1.0f,0.0f };
@@ -260,10 +261,6 @@ void initPlanet()
 
 void renderPlanet() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    Planet.model = glm::translate(Planet.model, { -15.0f,0.0f,0.0f });
-    Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
-    Planet.model = glm::translate(Planet.model, { 15.0f, 0.0f, 0.0f });
-    Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
     Planet.render(GL_TRIANGLES, 24, view, projection, program);
 }
 
@@ -323,13 +320,7 @@ void initMond1()
 
 void renderMond1() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    Mond1.model = glm::translate(Mond1.model, { -15.0f,-5.0f,0.0f });
-    Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
-    Mond1.model = glm::translate(Mond1.model, { 15.0f,5.0f,0.0f });
-
-    Mond1.model = glm::translate(Mond1.model, { -15.0f,-5.0f,0.0f });
-    Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
-    Mond1.model = glm::translate(Mond1.model, { 15.0f,5.0f,0.0f });
+    
     Mond1.render(GL_TRIANGLES, 24, view, projection, program);
 }
 
@@ -390,13 +381,7 @@ void initMond2()
 
 void renderMond2(){
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
-    Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
-    Mond2.model = glm::translate(Mond2.model, { 15.0f,-5.0f,0.0f });
-
-    Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
-    Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
-    Mond2.model = glm::translate(Mond2.model, { 15.0f,-5.0f,0.0f });
+    
     Mond2.render(GL_TRIANGLES, 24, view, projection, program);
 }
 
@@ -423,9 +408,6 @@ void initAxes() {
 }
 
 void renderAxis() {
-    xaxis.model = glm::translate(xaxis.model, { -15.0f,0.0f,0.0f });
-    xaxis.model = glm::rotate(xaxis.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
-    xaxis.model = glm::translate(xaxis.model, { 15.0f,0.0f,0.0f });
 
     xaxis.render(GL_LINES, 2, view, projection, program);
     yaxis.render(GL_LINES, 2, view, projection, program);
@@ -488,6 +470,51 @@ void render()
     renderMond1();
     renderMond2();
     renderAxis();
+
+    //Ohne delay rendert das Programm viel zu schnell
+    switch (n)
+    {
+    case 1:
+        Sleep(30);
+        break;
+    case 2:
+        Sleep(20);
+        break;
+    case 3:
+        Sleep(10);
+        break;
+    case 4:
+        Sleep(3);
+        break;
+    }
+
+    if (g) {
+        Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
+        Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+        Mond2.model = glm::translate(Mond2.model, { 15.0f,-5.0f,0.0f });
+
+        Mond1.model = glm::translate(Mond1.model, { -15.0f,-5.0f,0.0f });
+        Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
+        Mond1.model = glm::translate(Mond1.model, { 15.0f,5.0f,0.0f });
+
+        xaxis.model = glm::translate(xaxis.model, { -15.0f,0.0f,0.0f });
+        xaxis.model = glm::rotate(xaxis.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+        xaxis.model = glm::translate(xaxis.model, { 15.0f,0.0f,0.0f });
+
+        Planet.model = glm::translate(Planet.model, { -15.0f,0.0f,0.0f });
+        Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+        Planet.model = glm::translate(Planet.model, { 15.0f, 0.0f, 0.0f });
+    }
+
+    Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
+    Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
+    Mond2.model = glm::translate(Mond2.model, { 15.0f,-5.0f,0.0f });
+
+    Mond1.model = glm::translate(Mond1.model, { -15.0f,-5.0f,0.0f });
+    Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
+    Mond1.model = glm::translate(Mond1.model, { 15.0f,5.0f,0.0f });
+
+    Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
 }
 
 void glutDisplay ()
@@ -530,22 +557,40 @@ void glutKeyboard (unsigned char keycode, int x, int y)
     case 'u':
         Planet.model = glm::translate(Planet.model, { 0.0f,1.0f,0.0f });
         Planet.render(GL_TRIANGLES, 24, view, projection, program);
+
+        Mond1.model = glm::translate(Mond1.model, { 0.0f,1.0f,0.0f });
+        Mond1.render(GL_TRIANGLES, 24, view, projection, program);
+
+        Mond2.model = glm::translate(Mond2.model, { 0.0f,1.0f,0.0f });
+        Mond2.render(GL_TRIANGLES, 24, view, projection, program);
+
+        xaxis.model = glm::translate(xaxis.model, { 0.0f,1.0f,0.0f });
+        xaxis.render(GL_TRIANGLES, 24, view, projection, program);
         break;
     case 'i':
         Planet.model = glm::translate(Planet.model, { 0.0f,-1.0f,0.0f });
         Planet.render(GL_TRIANGLES, 24, view, projection, program);
+
+        Mond1.model = glm::translate(Mond1.model, { 0.0f,-1.0f,0.0f });
+        Mond1.render(GL_TRIANGLES, 24, view, projection, program);
+
+        Mond2.model = glm::translate(Mond2.model, { 0.0f,-1.0f,0.0f });
+        Mond2.render(GL_TRIANGLES, 24, view, projection, program);
+
+        xaxis.model = glm::translate(xaxis.model, { 0.0f,-1.0f,0.0f });
+        xaxis.render(GL_TRIANGLES, 24, view, projection, program);
         break;
-    case 'x':
-        rotationx += rotationstep;
-        if (rotationx == 360) {
-            rotationx = 0;
-        }
+    case 'g':
+        if (g) g = false;
+        else g = true;
         break;
-    case 'y':
-        rotationy += rotationstep;
-        if (rotationy == 360) {
-            rotationy = 0;
-        }
+    case 'd':
+        if (n == 1) break;
+        n--;
+        break;
+    case 'f':
+        if (n == 4) break;
+        n++;
         break;
     }
   glutPostRedisplay();
@@ -593,7 +638,7 @@ int main(int argc, char** argv)
   // GLUT: Set callbacks for events.
   glutReshapeFunc(glutResize);
   glutDisplayFunc(glutDisplay);
-  //glutIdleFunc   (glutDisplay); // redisplay when idle
+  glutIdleFunc   (glutDisplay); // redisplay when idle
   
   glutKeyboardFunc(glutKeyboard);
   
