@@ -26,7 +26,7 @@ glm::mat4x4 view;
 glm::mat4x4 projection;
 
 //Size of a rotation-step in degrees, should be divisor of 360
-float rotationstep = 30; 
+float rotationstep = 1; 
 
 float rotationx = 0.f;
 float rotationy = 0.f;
@@ -188,7 +188,7 @@ void drawTriangle(float v1x, float v1y, float v1z,
 
     Object triangle;
     triangle.vertices = { {v1x,v1y,v1z},{v2x,v2y,v2z},{v3x,v3y,v3z} };
-    triangle.colors = { {1.0f,1.0f,0.0f},{1.0f,1.0f,0.0f},{1.0f,1.0f,0.0f} };
+    triangle.colors = { {0.0f,1.0f,0.0f},{0.0f,1.0f,0.0f},{0.0f,1.0f,0.0f} };
     triangle.indices = { 0,1,2 };
     GLuint programId = program.getHandle();
     
@@ -288,7 +288,7 @@ void initTriangle()
     //              0               4               5
     subdivide(r, 0.0f, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, -r, n);
     //              1               3               5
-    subdivide(r, 0.0f, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
+    subdivide(0.0f, r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
     //              4               3               5
     subdivide(0.0f, -r, 0.0f, -r, 0.0f, 0.0f, 0.0f, 0.0f, -r, n);
     
@@ -397,7 +397,8 @@ void glutResize (int width, int height)
   glViewport(0, 0, width, height);
   
   // Construct projection matrix.
-  projection = glm::perspective(45.0f, (float) width / height, zNear, zFar);
+  //projection = glm::perspective(45.0f, (float) width / height, zNear, zFar);
+  projection = glm::ortho(-5.0f * (float)width / height, 5.0f * (float)width / height, -5.0f, 5.0f, zNear, zFar);
 }
 
 /*
