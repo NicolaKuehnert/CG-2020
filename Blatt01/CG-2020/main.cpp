@@ -25,9 +25,6 @@ cg::GLSLProgram program;
 glm::mat4x4 view;
 glm::mat4x4 projection;
 
-//Size of a rotation-step in degrees, should be divisor of 360
-float rotationstep = 1; 
-
 float rotationx = 1.f;
 float rotationy = 1.f;
 float rotationz = 0.f;
@@ -38,7 +35,7 @@ float X_VIEW =0.0f, Y_VIEW=0.0f, Z_VIEW=50.0f;
 float zNear = 0.1f;
 float zFar  = 100.0f;
 int n = 4;
-float r = 3.0f;
+float r = 5.0f;
 bool g = false;
 
 glm::vec3 red = { 1.0f,0.0f,0.0f };
@@ -343,20 +340,22 @@ void render()
     if (g) {
 
         Planet.model = glm::translate(Planet.model, { -15.0f,0.0f,0.0f });
-        Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+        Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::normalize(glm::vec3(0, 1, 0)));
         Planet.model = glm::translate(Planet.model, { 15.0f, 0.0f, 0.0f });
         
-        Mond2.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
-        //Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
+        Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
+        Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationy), glm::normalize(glm::vec3(0, 1, 0)));
+        Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationx), glm::normalize(glm::vec3(1, 0, 0)));
         Mond2.model = glm::translate(Mond2.model, { 0.0f,-5.0f,0.0f });
 
-        //Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
-        Mond1.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+        Mond1.model = glm::translate(Mond1.model, { -15.0f,-5.0f,0.0f });
+        Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationx), glm::normalize(glm::vec3(1, 0, 0)));
+        Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationy), glm::normalize(glm::vec3(0, 1, 0)));
         Mond1.model = glm::translate(Mond1.model, { 0.0f,5.0f,0.0f });
 
         
         xaxis.model = glm::translate(xaxis.model, { -15.0f,0.0f,0.0f });
-        xaxis.model = glm::rotate(xaxis.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+        xaxis.model = glm::rotate(xaxis.model, glm::radians(rotationy), glm::normalize(glm::vec3(0, 1, 0)));
         xaxis.model = glm::translate(xaxis.model, { 15.0f,0.0f,0.0f });
 
         
@@ -366,17 +365,17 @@ void render()
         Monde rotieren um den Planeten
         */
         Mond2.model = glm::translate(Mond2.model, { -15.0f,5.0f,0.0f });
-        Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
+        Mond2.model = glm::rotate(Mond2.model, glm::radians(rotationx), glm::normalize(glm::vec3(1, 0, 0)));
         Mond2.model = glm::translate(Mond2.model, { 15.0f,-5.0f,0.0f });
 
         Mond1.model = glm::translate(Mond1.model, { -15.0f,-5.0f,0.0f });
-        Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationx), glm::vec3(1, 0, 0));
+        Mond1.model = glm::rotate(Mond1.model, glm::radians(rotationx), glm::normalize(glm::vec3(1, 0, 0)));
         Mond1.model = glm::translate(Mond1.model, { 15.0f,+5.0f,0.0f });
 
         /*
         Planet rotiert um sich selbst
         */
-        //Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::vec3(0, 1, 0));
+        Planet.model = glm::rotate(Planet.model, glm::radians(rotationy), glm::normalize(glm::vec3(0, 1, 0)));
     }
     
 
