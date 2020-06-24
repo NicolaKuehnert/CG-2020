@@ -17,29 +17,37 @@ namespace cg
 	class CubeSharp : public AbstractCube
 	{
 	public:
-		CubeSharp(float size, const glm::vec3& color = glm::vec3(0.8f))
+		CubeSharp(float size, int shader, const glm::vec3& color = glm::vec3(0.8f))
 		{
+			shade = shader;
+			f_color = color;
 			initShader();
 			initObject(color, size);
+			
 		}
 
 		void initShader()
 		{
-			CubeSharp::initShader(programSimple, "shader/simple.vert", "shader/simple.frag");
-			//CubeSharp::initShader(programShaded, "shader/shadedGouraud.vert", "shader/shadedGouraud.frag");
-			CubeSharp::initShader(programShaded, "shader/shadedPhong.vert", "shader/shadedPhong.frag");
-
+			if (shade == 1) {
+				CubeSharp::initShader(programSimple, "shader/simple.vert", "shader/simple.frag");
+				CubeSharp::initShader(programShaded, "shader/shadedPhong.vert", "shader/shadedPhong.frag");
+			}
+			else if (shade == 0) {
+				CubeSharp::initShader(programShaded, "shader/shadedGouraud.vert", "shader/shadedGouraud.frag");
+				CubeSharp::initShader(programShaded, "shader/shadedPhong.vert", "shader/shadedPhong.frag");
+			}
 			programShaded.use();
 			programShaded.setUniform("light",  glm::vec3(0, 0, 0));
 			programShaded.setUniform("lightI", float(1.0f));
-			programShaded.setUniform("surfKa", glm::vec3(0.1f, 0.1f, 0.1f));
-			programShaded.setUniform("surfKd", glm::vec3(0.7f, 0.1f, 0.1f));
+			programShaded.setUniform("surfKa", glm::vec3(0.1f, 0.1f, 0.1f)); //Lichtfarbe
+			programShaded.setUniform("surfKd", f_color); //Farbe des Objekts
 			programShaded.setUniform("surfKs", glm::vec3(1, 1, 1));
 			programShaded.setUniform("surfShininess", float(8.0f));
 		}
 
 		void initObject(const glm::vec3& color, const float size)
 		{
+			r = size;
 			std::vector<glm::vec3> vertices = {
 				{ size, 0.0f, 0.0f }, //0 
 				{ 0.0f, size, 0.0f }, //1
@@ -56,10 +64,17 @@ namespace cg
 			std::vector<glm::vec3> normals;
 			std::vector<GLuint> indices;
 
-			CubeSharp::addQuad(positions, normals, colors, color, vertices[0], vertices[1], vertices[2], vertices[4]);
-			CubeSharp::addQuad(positions, normals, colors, color, vertices[5], vertices[1], vertices[0], vertices[4]);
-			CubeSharp::addQuad(positions, normals, colors, color, vertices[3], vertices[1], vertices[5], vertices[4]);
-			CubeSharp::addQuad(positions, normals, colors, color, vertices[2], vertices[1], vertices[3], vertices[4]);
+			subdivide(positions, normals, colors, color, vertices[0], vertices[1], vertices[2], 4);
+			subdivide(positions, normals, colors, color, vertices[0], vertices[2], vertices[4], 4);
+
+			subdivide(positions, normals, colors, color, vertices[5], vertices[1], vertices[0], 4);
+			subdivide(positions, normals, colors, color, vertices[5], vertices[0], vertices[4], 4);
+
+			subdivide(positions, normals, colors, color, vertices[3], vertices[1], vertices[5], 4);
+			subdivide(positions, normals, colors, color, vertices[3], vertices[5], vertices[4], 4);
+
+			subdivide(positions, normals, colors, color, vertices[2], vertices[1], vertices[3], 4);
+			subdivide(positions, normals, colors, color, vertices[2], vertices[3], vertices[4], 4);
 
 			for (GLushort i = 0; i < positions.size(); i++)
 				indices.push_back(i);
@@ -236,11 +251,59 @@ namespace cg
 			colors.push_back(color);
 			colors.push_back(color);
 		}
+		
+		void subdivide(std::vector<glm::vec3>& positions, std::vector<glm::vec3>& normals, std::vector<glm::vec3>& colors, const glm::vec3& color, const glm::vec3& a, const glm::vec3& b, const glm::vec3& c,
+			int level) {
+			if (level == 0) {
+				// Reached desired tessellation level, emit triangle.
+				addTriangle(positions, normals, colors,
+					color, a, b, c);
+			}
+			else {
+				// Calculate middle of first edge...
+				float v12x = (r / 2) * (a.x + b.x);
+				float v12y = (r / 2) * (a.y + b.y);
+				float v12z = (r / 2) * (a.z + b.z);
+				// ... and renormalize it to get a point on the sphere.
+				float s = r / sqrt(v12x * v12x + v12y * v12y + v12z * v12z);
+				v12x *= s;
+				v12y *= s;
+				v12z *= s;
+				glm::vec3 v12 = { v12x,v12y,v12z };
 
-		static void addQuad(std::vector<glm::vec3>& positions, std::vector<glm::vec3>& normals, std::vector<glm::vec3>& colors, const glm::vec3& color, const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const glm::vec3& d)
-		{
-			addTriangle(positions, normals, colors, color, a, b, c);
-			addTriangle(positions, normals, colors, color, a, c, d);
+				// Same thing for the middle of the other two edges.
+				float v13x = (r / 2) * (a.x + c.x);
+				float v13y = (r / 2) * (a.y + c.y);
+				float v13z = (r / 2) * (a.z + c.z);
+				s = r / sqrt(v13x * v13x + v13y * v13y + v13z * v13z);
+				v13x *= s;
+				v13y *= s;
+				v13z *= s;
+				glm::vec3 v13 = { v13x,v13y,v13z };
+
+				float v23x = (r / 2) * (b.x + c.x);
+				float v23y = (r / 2) * (b.y + c.y);
+				float v23z = (r / 2) * (b.z + c.z);
+				s = r / sqrt(v23x * v23x + v23y * v23y + v23z * v23z);
+				v23x *= s;
+				v23y *= s;
+				v23z *= s;
+				glm::vec3 v23 = { v23x,v23y,v23z };
+
+				// Make the recursive calls.
+				subdivide(positions, normals, colors,
+					color, a, v12,
+					v13, level-1); 
+				subdivide(positions, normals, colors,
+					color, v12, b,
+					v23, level - 1);
+				subdivide(positions, normals, colors,
+					color, v13, v23,
+					c, level - 1);
+				subdivide(positions, normals, colors,
+					color, v12, v23,
+					v13, level - 1);
+			}
 		}
 
 		static void addTriangle(std::vector<glm::vec3>& positions, std::vector<glm::vec3>& normals, std::vector<glm::vec3>& colors,
@@ -286,7 +349,9 @@ namespace cg
 	private:
 		GLSLProgram programShaded;
 		GLSLProgram programSimple;
-		
+		glm::vec3 f_color;
+		float r;
+		int shade;
 		Object objCube;
 		Object objNormals;
 	};

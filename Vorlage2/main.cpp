@@ -34,6 +34,15 @@ glm::mat4x4 projection;
 float zNear = 0.1f;
 float zFar = 100.0f;
 float x_view = 0.0f, y_view = 0.0f, z_view = 40.0f;
+
+
+static enum ShaderType {
+	PHONG,
+	GOURAD
+};
+
+int shade = GOURAD;
+
 /*
 Release resources on termination.
 */
@@ -48,7 +57,7 @@ void release()
 
 unsigned  lightIndex = 0;
 glm::vec4 lights[2] = {
-	{ 0.0f, -1.0f, 0.0f, 0.0f },
+	{ 0.0f, 1.0f, 0.0f, 0.0f },
 	{ 0.0f,  0.0f, 0.0f, 1.0f }
 };
 /*
@@ -71,10 +80,10 @@ bool init()
 	// Create cube objects.
 	try
 	{
-		sun   = new cg::CubeSharp(5.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-		planet  = new cg::CubeSharp(2.0f, glm::vec3(0.f, 1.0f, 0.0f));
-		moon1 = new cg::CubeSharp(1.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		moon2 = new cg::CubeSharp(1.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+		sun   = new cg::CubeSharp(5.0f, shade, glm::vec3(1.0f, 0.1f, 0.1f));
+		planet  = new cg::CubeSharp(2.0f, shade, glm::vec3(0.1f, 1.0f, 0.1f));
+		moon1 = new cg::CubeSharp(1.0f, shade, glm::vec3(0.1f, 0.1f, 1.0f));
+		moon2 = new cg::CubeSharp(1.0f, shade, glm::vec3(0.1f, 0.1f, 1.0f));
 
 
 		manipulate = sun;
@@ -187,6 +196,8 @@ void glutKeyboard (unsigned char keycode, int x, int y)
 		lightIndex = 1 - lightIndex;
 		sun ->setLightVector(lights[lightIndex]);
 		planet->setLightVector(lights[lightIndex]);
+		moon1->setLightVector(lights[lightIndex]);
+		moon2->setLightVector(lights[lightIndex]);
 		std::ostringstream os; os << "05 - LightVector " << glm::to_string(lights[lightIndex]) << std::flush;
 		glutSetWindowTitle(os.str().c_str());
 		break;
@@ -196,6 +207,11 @@ void glutKeyboard (unsigned char keycode, int x, int y)
 		break;
 	case 'w':
 		wire = wire == true ? false : true;
+		break;
+	case 's':
+		shade = shade == PHONG ? GOURAD : PHONG;
+		release();
+		init();
 		break;
 	}
 	
