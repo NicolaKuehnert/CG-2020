@@ -33,7 +33,7 @@ glm::mat4x4 projection;
 
 float zNear = 0.1f;
 float zFar = 100.0f;
-
+float x_view = 0.0f, y_view = 0.0f, z_view = 40.0f;
 /*
 Release resources on termination.
 */
@@ -43,6 +43,7 @@ void release()
 	delete sun;
 	delete moon1;
 	delete moon2;
+	
 }
 
 unsigned  lightIndex = 0;
@@ -111,6 +112,12 @@ bool init()
  */
 void render()
 {
+	// Construct view matrix.
+	glm::vec3 eye(x_view, y_view, z_view);
+	glm::vec3 center(0.0f, 0.0f, 0.0f);
+	glm::vec3 up(0.0f, 1.0f, 0.0f);
+
+	view = glm::lookAt(eye, center, up);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	sun ->render(view, projection);
@@ -149,10 +156,10 @@ void glutKeyboard (unsigned char keycode, int x, int y)
 	switch (keycode)
 	{
 	case '+':
-		model = glm::scale(model, glm::vec3(1.2f));
+		z_view += 10;
 		break;
 	case '-':
-		model = glm::scale(model, glm::vec3(0.8f));
+		z_view -= 10;
 		break;
 	case 'x':
 		model = glm::rotate(model, 0.1f, glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)));
